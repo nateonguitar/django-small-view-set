@@ -36,8 +36,3 @@ class MyCustomViewSet(SmallViewSet):
         self.protect_update(request)
         return JsonResponse({"message": f"Custom detail endpoint for ID {pk}"}, status=200)
 ```
-
-## Next Steps
-
-- Learn about [Handling Endpoint Exceptions](./README_HANDLE_ENDPOINT_EXCEPTIONS.md) to customize error handling.
-- Explore [Custom Protections](./README_CUSTOM_PROTECTIONS.md) to secure your endpoints.

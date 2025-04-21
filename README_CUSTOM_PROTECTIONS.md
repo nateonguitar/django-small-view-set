@@ -49,8 +49,3 @@ class MyProtectedViewSet(AppViewSet):
 
         return JsonResponse({"message": "Protected resource created!"}, status=201)
 ```
-
-## Next Steps
-
-- Check out [Handling Endpoint Exceptions](./README_HANDLE_ENDPOINT_EXCEPTIONS.md) to customize error handling.
-- Explore [Getting Started](./README_SIMPLE.md) for a basic example.

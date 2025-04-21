@@ -99,8 +99,3 @@ class ThrottledViewSet(SmallViewSet):
 - **Validation**: DRF serializers provide robust validation and transformation for your data.
 - **Throttling**: DRF throttling classes allow you to control the rate of requests to your endpoints.
 - **Compatibility**: Small View Set is designed to work seamlessly with DRF tools, giving you the best of both worlds.
-
-## Next Steps
-
-- Check out [Getting Started](./README_SIMPLE.md) for a basic example.
-- Explore [Custom Protections](./README_CUSTOM_PROTECTIONS.md) to secure your endpoints.

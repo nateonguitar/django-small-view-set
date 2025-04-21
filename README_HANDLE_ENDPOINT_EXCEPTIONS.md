@@ -46,8 +46,3 @@ class MyViewSet(SmallViewSet):
         self.protect_list(request)
         return JsonResponse({"message": "Hello, world!"}, status=200)
 ```
-
-## Next Steps
-
-- Explore [Custom Protections](./README_CUSTOM_PROTECTIONS.md) to secure your endpoints.
-- Check out [Getting Started](./README_SIMPLE.md) for a basic example.

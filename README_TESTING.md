@@ -258,8 +258,3 @@ class Test(TestCase):
 - Use `content_type="application/json"` in requests to ensure proper handling.
 - Leverage Django’s `TestCase` and `Client` for testing endpoints.
 - Use `reverse` to do lookups from the endpoint names.
-
-## Next Steps
-
-- Explore [Getting Started](./README_SIMPLE.md) for a basic example.
-- Check out [Custom Protections](./README_CUSTOM_PROTECTIONS.md) to secure your endpoints.
