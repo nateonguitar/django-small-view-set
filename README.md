@@ -5,7 +5,7 @@ A lightweight Django ViewSet alternative with minimal abstraction. This library 
 ## Documentation
 
 - [Getting Started](./README_SIMPLE.md): A bare-bones example to get the fundamentals.
-- [Register URLs](./README_REGISTER_URLS): How to register viewset urls.
+- [Register URLs](./README_REGISTER_URLS.md): How to register viewset urls.
 - [Custom Endpoints](./README_CUSTOM_ENDPOINT.md): Learn how to define custom endpoints alongside the default router.
 - [Handling Endpoint Exceptions](./README_HANDLE_ENDPOINT_EXCEPTIONS.md): Understand how to write your own decorators for exception handling.
 - [Custom Protections](./README_CUSTOM_PROTECTIONS.md): Learn how to subclass `SmallViewSet` to add custom protections like logged-in checks.
