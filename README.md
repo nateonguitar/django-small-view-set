@@ -11,26 +11,39 @@ This guide provides a simple example to get started with the library.
 Here’s how you can define a basic API endpoint with one collection route and one detail route:
 
 ```python
+import asyncio
 from django.http import JsonResponse
 from django.urls import path
-from small_view_set.small_view_set import SmallViewSet
-from small_view_set.decorators import default_handle_endpoint_exceptions
+from small_view_set.small_view_set import SmallViewSet, default_handle_endpoint_exceptions, disable_endpoint
 
 class BarViewSet(SmallViewSet):
 
     def urlpatterns(self):
         return [
             path('api/bars/',          self.default_router, name='bars_collection'),
+            path('api/bars/items/',    self.items, name='bars_items'),
             path('api/bars/<int:pk>/', self.default_router, name='bars_detail'),
         ]
 
     @default_handle_endpoint_exceptions
-    def list(self, request, *args, **kwargs):
+    def list(self, request):
         self.protect_list(request)
         return JsonResponse({"message": "Hello, world!"}, status=200)
 
     @default_handle_endpoint_exceptions
-    def retrieve(self, request, pk, *args, **kwargs):
+    @disable_endpoint
+    async def items(self, request):
+        self.protect_list(request)
+        await asyncio.sleep(1)
+        return JsonResponse({"message": "List of items"}, status=200)
+
+    @default_handle_endpoint_exceptions
+    def patch(self, request, pk):
+        self.protect_update(request)
+        return JsonResponse({"message": f"Updated {pk}"}, status=200)
+
+    @default_handle_endpoint_exceptions
+    async def retrieve(self, request, pk):
         self.protect_retrieve(request)
         return JsonResponse({"message": f"Detail for ID {pk}"}, status=200)
 ```
@@ -57,4 +70,5 @@ urlpatterns = [
 - [Handling Endpoint Exceptions](./README_HANDLE_ENDPOINT_EXCEPTIONS.md): Understand how to write your own decorators for exception handling.
 - [Custom Protections](./README_CUSTOM_PROTECTIONS.md): Learn how to subclass `SmallViewSet` to add custom protections like logged-in checks.
 - [DRF Compatibility](./README_DRF_COMPATIBILITY.md): Learn how to use some of Django Rest Framework's tools, like Serializers.
+- [Disabling an endpoint](./README_DISABLE_ENDPOINT.md): Learn how to disable an endpoint without needing to delete it or comment it out.
 - [Reason](./README_REASON.md): Reasoning behind this package.

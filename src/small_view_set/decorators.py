@@ -1,9 +1,8 @@
+import inspect
 import logging
 from django.conf import settings
-from functools import wraps
 
 import json
-import functools
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, SuspiciousOperation, PermissionDenied
 from django.http import (
@@ -58,12 +57,11 @@ def _get_logger(name):
 
 
 def default_handle_endpoint_exceptions(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        logger = _get_logger('django-small-view-set.default_handle_endpoint_exceptions')
+    logger = _get_logger('django-small-view-set.default_handle_endpoint_exceptions')
 
+    def _exception_handler(e):
         try:
-            return func(*args, **kwargs)
+            raise e
 
         except json.JSONDecodeError:
             return JsonResponse(data={"errors": "Invalid JSON"}, status=400)
@@ -81,8 +79,11 @@ def default_handle_endpoint_exceptions(func):
         except (PermissionDenied, SuspiciousOperation):
             return JsonResponse(data=None, safe=False, status=403)
 
-        except (EndpointDisabledException, Http404, ObjectDoesNotExist):
+        except (Http404, ObjectDoesNotExist):
             return JsonResponse(data=None, safe=False, status=404)
+        
+        except EndpointDisabledException:
+            return JsonResponse(data=None, safe=False, status=405)
 
         except MethodNotAllowed as e:
             return JsonResponse(
@@ -151,10 +152,25 @@ def default_handle_endpoint_exceptions(func):
                 status=status_code,
                 content_type='application/json')
 
-    return wrapper
+    def sync_wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            return _exception_handler(e)
+
+    async def async_wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except Exception as e:
+            return _exception_handler(e)
+
+    if inspect.iscoroutinefunction(func):
+        return async_wrapper
+    else:
+        return sync_wrapper
 
 
-def disable_endpoint(view_func):
+def disable_endpoint(func):
     """
     Temporarily disables an API endpoint based on the SMALL_VIEWSET_RESPECT_DISABLED_ENDPOINTS setting.
 
@@ -169,17 +185,27 @@ def disable_endpoint(view_func):
         ```python
         class ExampleViewSet(SmallViewSet):
 
-            @disable_endpoint
             @default_handle_endpoint_exceptions
+            @disable_endpoint
             def retrieve(self, request: Request) -> JsonResponse:
                 self.protect_retrieve(request)
                 . . .
         ```
     """
-    @wraps(view_func)
-    def wrapper(*args, **kwargs):
-        if settings.SMALL_VIEWSET_RESPECT_DISABLED_ENDPOINTS:
+    respect_disabled_endpoints = getattr(settings, 'SMALL_VIEWSET_RESPECT_DISABLED_ENDPOINTS', True)
+    def sync_wrapper(*args, **kwargs):
+        if respect_disabled_endpoints:
             raise EndpointDisabledException()
-        return view_func(*args, **kwargs)
-    return wrapper
+        return func(*args, **kwargs)
+
+    async def async_wrapper(*args, **kwargs):
+        if respect_disabled_endpoints:
+            raise EndpointDisabledException()
+        return await func(*args, **kwargs)
+
+
+    if inspect.iscoroutinefunction(func):
+        return async_wrapper
+    else:
+        return sync_wrapper
 

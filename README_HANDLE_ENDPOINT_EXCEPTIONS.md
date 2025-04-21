@@ -25,15 +25,34 @@ The `@default_handle_endpoint_exceptions` is not intended to be used for product
 You can write your own decorator by copying the `default_handle_endpoint_exceptions` implementation and customizing it for your app. For example:
 
 ```python
+import inspect
 from django.http import JsonResponse
 
 def exception_handler(func):
-    def wrapper(*args, **kwargs):
+    def _exception_handler(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except CustomException:
+            return JsonResponse(data=None, safe=False, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    def sync_wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
-    return wrapper
+            return _exception_handler(e)
+
+    async def async_wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except Exception as e:
+            return _exception_handler(e)
+
+    if inspect.iscoroutinefunction(func):
+        return async_wrapper
+    else:
+        return sync_wrapper
 ```
 
 Then use it in your viewset:

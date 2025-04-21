@@ -12,25 +12,25 @@
 3. **Install Dependencies**:
    - Install dependencies inside the container after mounting the directory:
      ```bash
-     docker compose run django-small-view-set-builder poetry install
+     docker compose run --remove-orphans django-small-view-set-builder poetry install
      ```
 
 4. **Run Tests**:
    - Run tests before releasing:
      ```bash
-     docker compose run django-small-view-set-builder python /app/tests/manage.py test
+     docker compose run --remove-orphans django-small-view-set-builder python /app/tests/manage.py test
      ```
 
 5. **Build the Package**:
    Inside the Docker container, build the package:
    ```bash
-   docker compose run django-small-view-set-builder poetry build
+   docker compose run --remove-orphans django-small-view-set-builder poetry build
      ```
 
 6. **Publish to PyPI**:
    Upload the package to PyPI:
    ```bash
-   docker compose run django-small-view-set-builder poetry publish
+   docker compose run --remove-orphans django-small-view-set-builder poetry publish
      ```
 
 7. **Verify the Release**:

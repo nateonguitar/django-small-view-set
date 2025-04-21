@@ -1,4 +1,4 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, AsyncClient
 from django.urls import reverse
 
 class TestBarViewSet(TestCase):
@@ -26,3 +26,21 @@ class TestBarViewSet(TestCase):
         endpoint = reverse('bar_detail', args=[2])
         response = self.client.patch(endpoint, data={}, content_type='application/json')
         self.assertEqual(response.status_code, 200)
+
+    def test_disabled_endpoint(self):
+        endpoint = reverse('bar_some_endpoint')
+        response = self.client.get(endpoint)
+        # The endpoint exists, but it has the @disable_endpoint decorator on it
+        self.assertEqual(response.status_code, 405)
+
+    async def test_async_endpoint(self):
+        client = AsyncClient()
+        endpoint = reverse('bar_dog')
+        response = await client.get(endpoint)
+        self.assertEqual(response.status_code, 200)
+
+    async def test_disabled_async_endpoint(self):
+        client = AsyncClient()
+        endpoint = reverse('bar_cat')
+        response = await client.get(endpoint)
+        self.assertEqual(response.status_code, 405)

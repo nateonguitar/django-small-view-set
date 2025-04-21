@@ -1,7 +1,7 @@
 class EndpointDisabledException(Exception):
-    status_code = 404
-    message = "Not Found"
-    error_code = "not_found"
+    status_code = 405
+    message = "Method Not Allowed"
+    error_code = "method_not_allowed"
 
 class Unauthorized(Exception):
     status_code = 401

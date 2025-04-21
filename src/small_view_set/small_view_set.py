@@ -1,6 +1,6 @@
+import inspect
 import json
 import logging
-from django.http import JsonResponse
 from urllib.request import Request
 
 from .exceptions import BadRequest, MethodNotAllowed
@@ -8,24 +8,6 @@ from .exceptions import BadRequest, MethodNotAllowed
 logger = logging.getLogger('app')
 
 class SmallViewSet:
-    def create(self, request: Request, *args, **kwargs):
-        raise MethodNotAllowed('POST')
-
-    def list(self, request: Request, *args, **kwarg):
-        raise MethodNotAllowed('GET')
-
-    def retrieve(self, request: Request, pk, *args, **kwargs):
-        raise MethodNotAllowed('GET')
-
-    def put(self, request: Request, pk, *args, **kwargs):
-        raise MethodNotAllowed('PUT')
-
-    def patch(self, request: Request, pk, *args, **kwargs):
-        raise MethodNotAllowed('PATCH')
-
-    def delete(self, request: Request, pk, *args, **kwargs):
-        raise MethodNotAllowed('DELETE')
-
     def parse_json_body(self, request: Request):
         if request.content_type != 'application/json':
             raise BadRequest('Invalid content type')
@@ -76,7 +58,7 @@ class SmallViewSet:
         if request.method != 'DELETE':
             raise MethodNotAllowed(request.method)
 
-    def default_router(self, request: Request, pk=None, *args, **kwargs):
+    async def default_router(self, request: Request, pk=None, *args, **kwargs):
         """
         This method routes requests to the appropriate method based on the HTTP method and presence of a primary key (pk).
         
@@ -116,23 +98,41 @@ class SmallViewSet:
             def some_disabled_endpoint(self, request: Request):
                 self.protect_retrieve(request)
                 . . .
-                
         ```
         """
+        func = None
         if pk is None:
             if request.method == 'GET':
-                return self.list(request, *args, **kwargs)
+                if hasattr(self, 'list'):
+                    func = self.list
+
             elif request.method == 'POST':
-                return self.create(request, *args, **kwargs)
+                if hasattr(self, 'create'):
+                    func = self.create
         else:
             if request.method == 'GET':
-                return self.retrieve(request, pk, *args, **kwargs)
+                if hasattr(self, 'retrieve'):
+                    func = self.retrieve
+
             elif request.method == 'PUT':
-                return self.put(request, pk, *args, **kwargs)
+                if hasattr(self, 'put'):
+                    func = self.put
+
             elif request.method == 'PATCH':
-                return self.patch(request, pk, *args, **kwargs)
+                if hasattr(self, 'patch'):
+                    func = self.patch
+
             elif request.method == 'DELETE':
-                return self.delete(request, pk, *args, **kwargs)
-        endpoint_type = "detail" if pk else "collection"
-        logger.error(f'Got a none response from request_router for {endpoint_type} method {request.method}')
-        return JsonResponse(data=None, safe=False, status=500)
+                if hasattr(self, 'delete'):
+                    func = self.delete
+
+        if func is None:
+            raise MethodNotAllowed(request.method)
+
+        if pk is not None:
+            kwargs['pk'] = pk
+
+        if inspect.iscoroutinefunction(func):
+            return await func(request, *args, **kwargs)
+        else:
+            return func(request, *args, **kwargs)

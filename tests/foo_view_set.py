@@ -17,7 +17,7 @@ class FooViewSet(SmallViewSet):
         ]
 
     @default_handle_endpoint_exceptions
-    def list(self, request):
+    async def list(self, request):
         self.protect_list(request)
         return JsonResponse({"value": 1}, status=200)
 
