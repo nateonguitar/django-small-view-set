@@ -7,18 +7,19 @@ will raise an `EndpointDisabledException`, resulting in a 404 response. When set
 the endpoint will remain active, which is useful for testing environments.
 
 Usage:
-    - Apply this decorator directly to a view method or action.
-    - Example:
+Apply this decorator directly to a view method or action.
 
-    ```python
-    from small_view_set import endpoint_disabled
+Example:
 
-    @endpoint(allowed_methods=['GET'])
-    @endpoint_disabled
-    def retrieve(self, request):
-        self.protect_retrieve(request)
-        return JsonResponse({"message": "This endpoint is disabled."})
-    ```
+```python
+from small_view_set import endpoint_disabled
+
+@endpoint(allowed_methods=['GET'])
+@endpoint_disabled
+def retrieve(self, request):
+    self.protect_retrieve(request)
+    return JsonResponse({"message": "This endpoint is disabled."})
+```
 
 # IMPORTANT
 

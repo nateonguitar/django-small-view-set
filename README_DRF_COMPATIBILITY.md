@@ -74,11 +74,10 @@ class ThrottledItemsViewSet(SmallViewSet):
     def urlpatterns(self):
         return [
             path('api/throttle_items/',    self.default_router, name='throttled_items_collection'),
-            path('api/throttle_items/foo', self.default_router, name='throttled_items_foo'),
         ]
 
     @endpoint(allowed_method=['GET'])
-    def create(self, request):
+    def list(self, request):
         self.protect_list(request, apply_throttles=False)
         return JsonResponse({"message": "Throttled endpoint accessed"}, status=200)
 
