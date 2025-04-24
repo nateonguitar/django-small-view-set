@@ -1,7 +1,9 @@
-from tests.bar_view_set import BarViewSet
-from tests.foo_view_set import FooViewSet
+from tests.custom_endpoints_view_set import CustomEndpointsViewSet
+from tests.default_router_view_set import DefaultRouterViewSet
+from tests.custom_protections_view_set import CustomProtectionsViewSet
 
 urlpatterns = [
-    *BarViewSet().urlpatterns(),
-    *FooViewSet().urlpatterns(),
+    *CustomEndpointsViewSet().urlpatterns(),
+    *CustomProtectionsViewSet().urlpatterns(),
+    *DefaultRouterViewSet().urlpatterns(),
 ]

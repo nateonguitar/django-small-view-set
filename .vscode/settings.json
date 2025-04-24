@@ -1,0 +1,28 @@
+{
+    "editor.rulers": [
+        80,
+    ],
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "files.exclude": {
+        "**/.git": false,
+        "**/.pyc": true
+    },
+    "files.watcherExclude": {
+        "**/main.js": true,
+        "**/main.js.map": true,
+        "**/collected_static_files/**": true,
+        "**/build/**": true,
+        "**/.dart_tool/**": true,
+        "**/.idea/**": true,
+        "**/out/**": true
+    },
+    "search.exclude": {
+        "**/main.js": true,
+        "**/main.js.map": true,
+        "**/build/**": true,
+        "**/.dart_tool/**": true,
+        "**/.idea/**": true,
+        "**/out/**": true
+    },
+}

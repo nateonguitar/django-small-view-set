@@ -1,3 +1,6 @@
+from small_view_set.config import SmallViewSetConfig
+
+
 SECRET_KEY = "test-secret-key"
 DEBUG = True
 INSTALLED_APPS = []
@@ -8,3 +11,5 @@ DATABASES = {
         "NAME": ":memory:",
     }
 }
+
+SMALL_VIEW_SET_CONFIG = SmallViewSetConfig()

@@ -1,6 +1,7 @@
 import inspect
 import json
 import logging
+from django.http import JsonResponse
 from urllib.request import Request
 
 from .exceptions import BadRequest, MethodNotAllowed
@@ -15,48 +16,68 @@ class SmallViewSet:
 
     def protect_create(self, request: Request):
         """
-        Ensures that the request method is POST.
-        Raises:
-            MethodNotAllowed: If the request method is not GET.
+        Stub for adding any custom business logic to protect the create method.
+        For example:
+        - Check if the user is authenticated
+        - Check if the user has validated their email
+        - Throttle requests
+
+        Recommended to call super().protect_create(request) in the subclass in case
+        this library adds logic in the future.
         """
-        if request.method != 'POST':
-            raise MethodNotAllowed('POST')
+        pass
 
     def protect_list(self, request: Request):
         """
-        Ensures that the request method is GET.
-        Raises:
-            MethodNotAllowed: If the request method is not GET.
+        Stub for adding any custom business logic to protect the list method.
+        For example:
+        - Check if the user is authenticated
+        - Check if the user has validated their email
+        - Throttle requests
+
+        Recommended to call super().protect_create(request) in the subclass in case
+        this library adds logic in the future.
         """
-        if request.method != 'GET':
-            raise MethodNotAllowed(request.method)
+        pass
 
     def protect_retrieve(self, request: Request):
         """
-        Ensures that the request method is GET.
-        Raises:
-            MethodNotAllowed: If the request method is not GET.
+        Stub for adding any custom business logic to protect the retrieve method.
+        For example:
+        - Check if the user is authenticated
+        - Check if the user has validated their email
+        - Throttle requests
+
+        Recommended to call super().protect_create(request) in the subclass in case
+        this library adds logic in the future.
         """
-        if request.method != 'GET':
-            raise MethodNotAllowed(request.method)
+        pass
 
     def protect_update(self, request: Request):
         """
-        Ensures that the request method is PUT or PATCH.
-        Raises:
-            MethodNotAllowed: If the request method is not PUT or PATCH.
+        Stub for adding any custom business logic to protect the update method.
+        For example:
+        - Check if the user is authenticated
+        - Check if the user has validated their email
+        - Throttle requests
+
+        Recommended to call super().protect_create(request) in the subclass in case
+        this library adds logic in the future.
         """
-        if request.method not in ['PUT', 'PATCH']:
-            raise MethodNotAllowed(request.method)
+        pass
 
     def protect_delete(self, request: Request):
         """
-        Ensures that the request method is DELETE.
-        Raises:
-            MethodNotAllowed: If the request method is not DELETE.
+        Stub for adding any custom business logic to protect the delete method.
+        For example:
+        - Check if the user is authenticated
+        - Check if the user has validated their email
+        - Throttle requests
+
+        Recommended to call super().protect_create(request) in the subclass in case
+        this library adds logic in the future.
         """
-        if request.method != 'DELETE':
-            raise MethodNotAllowed(request.method)
+        pass
 
     async def default_router(self, request: Request, pk=None, *args, **kwargs):
         """
