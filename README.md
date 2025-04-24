@@ -14,7 +14,9 @@ Here’s how you can define a basic API endpoint with one collection route and o
 import asyncio
 from django.http import JsonResponse
 from django.urls import path
-from small_view_set.small_view_set import SmallViewSet, default_handle_endpoint_exceptions, disable_endpoint
+from small_view_set.small_view_set import SmallViewSet
+from small_view_set.decorators import endpoint, endpoint_disabled
+from small_view_set.config import SmallViewSetConfig
 
 class BarViewSet(SmallViewSet):
 
@@ -25,24 +27,24 @@ class BarViewSet(SmallViewSet):
             path('api/bars/<int:pk>/', self.default_router, name='bars_detail'),
         ]
 
-    @default_handle_endpoint_exceptions
+    @endpoint(allowed_methods=['GET'])
     def list(self, request):
         self.protect_list(request)
         return JsonResponse({"message": "Hello, world!"}, status=200)
 
-    @default_handle_endpoint_exceptions
-    @disable_endpoint
+    @endpoint(allowed_methods=['GET'])
+    @endpoint_disabled
     async def items(self, request):
         self.protect_list(request)
         await asyncio.sleep(1)
         return JsonResponse({"message": "List of items"}, status=200)
 
-    @default_handle_endpoint_exceptions
+    @endpoint(allowed_methods=['PATCH'])
     def patch(self, request, pk):
         self.protect_update(request)
         return JsonResponse({"message": f"Updated {pk}"}, status=200)
 
-    @default_handle_endpoint_exceptions
+    @endpoint(allowed_methods=['GET'])
     async def retrieve(self, request, pk):
         self.protect_retrieve(request)
         return JsonResponse({"message": f"Detail for ID {pk}"}, status=200)

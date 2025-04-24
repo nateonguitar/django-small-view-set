@@ -25,14 +25,7 @@ class FooReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Foo
-        fields = (
-            'id',
-            'user',
-            'name',
-            'age',
-            'created_at',
-            'updated_at',
-        )
+        fields = ('id', 'name', 'age', 'created_at', 'updated_at')
 
 class FooViewSet(SmallViewSet):
 
@@ -42,7 +35,7 @@ class FooViewSet(SmallViewSet):
         ]
 
     @endpoint(allowed_methods=['POST'])
-    def create(self, request, *args, **kwargs):
+    def create(self, request):
         self.protect_create(request)
         request_user: User = request.user
         data = self.parse_json_body(request)
@@ -54,8 +47,7 @@ class FooViewSet(SmallViewSet):
         validated_data = validator.validated_data.copy()
         foo = Foo.objects.create(
             **validated_data,
-            user=request_user,
-        )
+            user=request_user)
 
         # Use a DRF model serializer for response data
         serializer = FooReadSerializer(foo)
@@ -69,11 +61,9 @@ You can also use DRF throttling classes to limit the rate of requests to your en
 ```python
 from rest_framework.throttling import UserRateThrottle
 from rest_framework.exceptions import Throttled
-from small_view_set import SmallViewSet
-from small_view_set.exceptions import Unauthorized
+from small_view_set import SmallViewSet, Unauthorized
 
-class ThrottledViewSet(SmallViewSet):
-
+class ThrottledItemsViewSet(SmallViewSet):
     def protect_create(self, request, apply_throttles=True):
         super().protect_create(request)
 
@@ -87,11 +77,17 @@ class ThrottledViewSet(SmallViewSet):
 
     def urlpatterns(self):
         return [
-            path('api/throttled/', self.default_router, name='throttled_collection'),
+            path('api/throttle_items/',    self.default_router, name='throttled_items_collection'),
+            path('api/throttle_items/foo', self.default_router, name='throttled_items_foo'),
         ]
 
-    @default_handle_endpoint_exceptions
-    def create(self, request, *args, **kwargs):
+    @endpoint(allowed_method=['GET'])
+    def create(self, request):
+        self.protect_list(request, apply_throttles=False)
+        return JsonResponse({"message": "Throttled endpoint accessed"}, status=200)
+
+    @endpoint(allowed_method=['POST'])
+    def create(self, request):
         self.protect_create(request)
         return JsonResponse({"message": "Throttled endpoint accessed"}, status=201)
 ```

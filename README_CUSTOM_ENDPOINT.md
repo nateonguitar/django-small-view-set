@@ -7,13 +7,16 @@ This guide demonstrates how to define custom endpoints alongside the default rou
 Here’s how you can define a viewset with one default router endpoint and two custom endpoints:
 
 ```python
+# Register SmallViewSetConfig in settings
+from small_view_set.decorators SmallViewSetConfig
+
+SMALL_VIEW_SET_CONFIG = SmallViewSetConfig()
+```
+
+```python
 from django.http import JsonResponse
 from django.urls import path
-from small_view_set.decorators import endpoint
-from small_view_set.config import SmallViewSetConfig
-
-# Register SmallViewSetConfig in settings
-SMALL_VIEW_SET_CONFIG = SmallViewSetConfig()
+from small_view_set.decorators import SmallViewSet, endpoint
 
 class MyCustomViewSet(SmallViewSet):
 

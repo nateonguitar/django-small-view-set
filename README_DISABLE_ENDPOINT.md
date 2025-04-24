@@ -21,7 +21,7 @@ Usage:
 
         @endpoint(allowed_methods=['GET'])
         @endpoint_disabled
-        def retrieve(self, request, *args, **kwargs):
+        def retrieve(self, request):
             self.protect_retrieve(request)
             return JsonResponse({"message": "This endpoint is disabled."})
     ```
