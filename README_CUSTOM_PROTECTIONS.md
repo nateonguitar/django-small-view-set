@@ -8,8 +8,12 @@ Here’s how to add a logged-in protection:
 
 ```python
 from small_view_set import SmallViewSet
-from small_view_set.decorators import default_handle_endpoint_exceptions
+from small_view_set.decorators import endpoint
+from small_view_set.config import SmallViewSetConfig
 from small_view_set.exceptions import Unauthorized
+
+# Register SmallViewSetConfig in settings
+SMALL_VIEW_SET_CONFIG = SmallViewSetConfig()
 
 class AppViewSet(SmallViewSet):
 
@@ -36,16 +40,13 @@ class MyProtectedViewSet(AppViewSet):
             path('api/protected/', self.default_router, name='protected_collection'),
         ]
 
-    @default_handle_endpoint_exceptions
+    @endpoint(allowed_methods=['GET'])
     def list(self, request, *args, **kwargs):
         self.protect_list(request)
         return JsonResponse({"message": "This is a protected endpoint!"}, status=200)
 
-    @default_handle_endpoint_exceptions
+    @endpoint(allowed_methods=['POST'])
     def create(self, request, *args, **kwargs):
         self.protect_create(request)
-        # Or to skip
-        self.protect_create(request, require_logged_in=False)
-
         return JsonResponse({"message": "Protected resource created!"}, status=201)
 ```

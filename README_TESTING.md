@@ -4,6 +4,11 @@ This guide demonstrates how to test endpoints created with the Django Small View
 
 ## Example Test Cases
 
+Remember to register SmallViewSetConfig in settings:
+```python
+SMALL_VIEW_SET_CONFIG = SmallViewSetConfig(exception_handler=app_exception_handler)
+```
+
 Remember to include `content_type="application/json"` in requests for proper handling.
 
 ```python
@@ -15,7 +20,7 @@ from api.models import (
     ForumPost,
     User,
 )
-from rest_framework import status
+
 
 class Test(TestCase):
 
@@ -38,7 +43,7 @@ class Test(TestCase):
     def test_get_forum_posts_not_logged_in(self):
         endpoint = reverse('forum_posts_collection')
         response = self.client.get(endpoint)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, 200)
 
     def test_create_forum_post_fails_not_logged_in(self):
         data = {
@@ -48,7 +53,7 @@ class Test(TestCase):
         }
         endpoint = reverse('forum_posts_collection')
         response = self.client.post(endpoint, data, content_type="application/json")
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, 401)
 
     def test_create_forum_post_fails_suspected_bot(self):
         self.client.force_login(self.user_suspected_bot)
@@ -59,7 +64,7 @@ class Test(TestCase):
         }
         endpoint = reverse('forum_posts_collection')
         response = self.client.post(endpoint, data, content_type="application/json")
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, 403)
 
     def test_create_forum_post_fails_bad_tags(self):
         self.client.force_login(self.user_normal)
@@ -73,22 +78,22 @@ class Test(TestCase):
             endpoint,
             { **data, 'title': 'Title <script>this is a script</script>' },
             content_type="application/json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 400)
         response = self.client.post(
             endpoint,
             { **data, 'title': 'Title <iframe>this is a script</iframe>' },
             content_type="application/json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 400)
         response = self.client.post(
             endpoint,
             { **data, 'text': 'Text <script>this is a script</script>' },
             content_type="application/json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 400)
         response = self.client.post(
             endpoint,
             { **data, 'text': 'Text <iframe>this is a script</iframe>' },
             content_type="application/json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 400)
 
     def test_create_forum_post_success(self):
         self.client.force_login(self.user_normal)
@@ -99,7 +104,7 @@ class Test(TestCase):
         }
         endpoint = reverse('forum_posts_collection')
         response = self.client.post(endpoint, data, content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, 201)
 
     def test_update_forum_post_fails_not_logged_in(self):
         forum_post = ForumPost.objects.create(
@@ -113,7 +118,7 @@ class Test(TestCase):
         }
         endpoint = reverse('forum_posts_detail', args=[forum_post.id])
         response = self.client.put(endpoint, data, content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, 401)
 
     def test_update_forum_post_fails_suspected_bot(self):
         self.client.force_login(self.user_suspected_bot)
@@ -128,7 +133,7 @@ class Test(TestCase):
         }
         endpoint = reverse('forum_posts_detail', args=[forum_post.id])
         response = self.client.put(endpoint, data, content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, 403)
 
     def test_update_forum_post_fails_bad_tags(self):
         self.client.force_login(self.user_normal)
@@ -145,22 +150,22 @@ class Test(TestCase):
             endpoint,
             { **data, 'title': 'Title <script>this is a script</script>' },
             content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 400)
         response = self.client.put(
             endpoint,
             { **data, 'title': 'Title <iframe>this is a script</iframe>' },
             content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 400)
         response = self.client.put(
             endpoint,
             { **data, 'text': 'Text <script>this is a script</script>' },
             content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 400)
         response = self.client.put(
             endpoint,
             { **data, 'text': 'Text <iframe>this is a script</iframe>' },
             content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 400)
 
     def test_update_forum_post_success(self):
         self.client.force_login(self.user_normal)
@@ -174,7 +179,7 @@ class Test(TestCase):
         }
         endpoint = reverse('forum_posts_detail', args=[forum_post.id])
         response = self.client.put(endpoint, data, content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, 200)
 
     @override_settings(LIST_PAGE_SIZES={'FORUM_POSTS': 2})
     def test_get_page_of_posts(self):
@@ -200,7 +205,7 @@ class Test(TestCase):
 
         # Get page 1, no page param
         response = self.client.get(endpoint)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, 200)
         response_data = response.json()
         self.assertEqual(response_data['pages'], 2)
         response_posts = response_data['results']
@@ -209,7 +214,7 @@ class Test(TestCase):
 
         # Get page 1, no page param
         response = self.client.get(f'{endpoint}?page=1')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, 200)
         response_data = response.json()
         self.assertEqual(response_data['pages'], 2)
         response_posts = response_data['results']
@@ -218,7 +223,7 @@ class Test(TestCase):
 
         # Get page 2
         response = self.client.get(f'{endpoint}?page=2')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, 200)
         response_data = response.json()
         self.assertEqual(response_data['pages'], 2)
         response_posts = response_data['results']
@@ -227,7 +232,7 @@ class Test(TestCase):
 
         # Get page 1, filter by search
         response = self.client.get(f'{endpoint}?search=this+site')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, 200)
         response_data = response.json()
         self.assertEqual(response_data['pages'], 1)
         response_posts = response_data['results']
@@ -236,7 +241,7 @@ class Test(TestCase):
 
         # Get page 1, filter by blog
         response = self.client.get(f'{endpoint}?blog=true')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, 200)
         response_data = response.json()
         self.assertEqual(response_data['pages'], 1)
         response_posts = response_data['results']
@@ -245,7 +250,7 @@ class Test(TestCase):
 
         # Get page 1, filter by non-blog
         response = self.client.get(f'{endpoint}?blog=false')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, 200)
         response_data = response.json()
         self.assertEqual(response_data['pages'], 1)
         response_posts = response_data['results']
@@ -258,3 +263,4 @@ class Test(TestCase):
 - Use `content_type="application/json"` in requests to ensure proper handling.
 - Leverage Django’s `TestCase` and `Client` for testing endpoints.
 - Use `reverse` to do lookups from the endpoint names.
+- Register `SmallViewSetConfig` in settings for custom exception and options/head handlers.

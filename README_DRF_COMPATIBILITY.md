@@ -10,9 +10,11 @@ You can use DRF serializers for validation and serialization while defining your
 from django.http import JsonResponse
 from django.urls import path
 from rest_framework import serializers
+from small_view_set.decorators import endpoint
+from small_view_set.config import SmallViewSetConfig
 
-from small_view_set.decorators import default_handle_endpoint_exceptions
-from small_view_set.small_view_set import SmallViewSet
+# Register SmallViewSetConfig in settings
+SMALL_VIEW_SET_CONFIG = SmallViewSetConfig()
 
 class FooCreateValidator(serializers.Serializer):
     name = serializers.CharField(max_length=100)
@@ -39,7 +41,7 @@ class FooViewSet(SmallViewSet):
             path('api/foo/', self.default_router, name='foo_collection'),
         ]
 
-    @default_handle_endpoint_exceptions
+    @endpoint(allowed_methods=['POST'])
     def create(self, request, *args, **kwargs):
         self.protect_create(request)
         request_user: User = request.user

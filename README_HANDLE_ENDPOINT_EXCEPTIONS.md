@@ -2,17 +2,21 @@
 
 This guide explains how to handle exceptions in your endpoints and customize the behavior.
 
-## Using the Default Decorator
+## Using the @endpoint Decorator
 
-The library provides a `default_handle_endpoint_exceptions` decorator to handle common API errors gracefully. Here’s an example:
+The library provides an `@endpoint` decorator to handle common API errors gracefully. Here’s an example:
 
 ```python
 from small_view_set import SmallViewSet
-from small_view_set.decorators import default_handle_endpoint_exceptions
+from small_view_set.decorators import endpoint
+from small_view_set.config import SmallViewSetConfig
+
+# Register SmallViewSetConfig in settings
+SMALL_VIEW_SET_CONFIG = SmallViewSetConfig()
 
 class MyViewSet(SmallViewSet):
 
-    @default_handle_endpoint_exceptions
+    @endpoint(allowed_methods=['GET'])
     def list(self, request, *args, **kwargs):
         self.protect_list(request)
         return JsonResponse({"message": "Hello, world!"}, status=200)
@@ -20,48 +24,46 @@ class MyViewSet(SmallViewSet):
 
 ## Writing Your Own Decorator
 
-The `@default_handle_endpoint_exceptions` is not intended to be used for production apps, though it technically could handle it. It is named a little long to pressure developers to write their own handler.
-
-You can write your own decorator by copying the `default_handle_endpoint_exceptions` implementation and customizing it for your app. For example:
+You can write your own decorator by copying the `@endpoint` implementation and customizing it for your app. For example:
 
 ```python
-import inspect
-from django.http import JsonResponse
+from small_view_set.decorators import endpoint
 
-def exception_handler(func):
-    def _exception_handler(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except CustomException:
-            return JsonResponse(data=None, safe=False, status=400)
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+def custom_endpoint(allowed_methods):
+    return endpoint(allowed_methods=allowed_methods)
 
-    def sync_wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            return _exception_handler(e)
-
-    async def async_wrapper(*args, **kwargs):
-        try:
-            return await func(*args, **kwargs)
-        except Exception as e:
-            return _exception_handler(e)
-
-    if inspect.iscoroutinefunction(func):
-        return async_wrapper
-    else:
-        return sync_wrapper
-```
-
-Then use it in your viewset:
-
-```python
 class MyViewSet(SmallViewSet):
 
-    @exception_handler
-    def list(self, request, *args, **kwargs):
-        self.protect_list(request)
-        return JsonResponse({"message": "Hello, world!"}, status=200)
+    @custom_endpoint(allowed_methods=['POST'])
+    def create(self, request, *args, **kwargs):
+        self.protect_create(request)
+        return JsonResponse({"message": "Created!"}, status=201)
 ```
+
+## Creating a Custom Exception Handler
+
+You can define a custom exception handler to catch specific exceptions and return custom responses. Here’s an example:
+
+```python
+from django.http import JsonResponse
+
+class CustomException(Exception):
+    pass
+
+def app_exception_handler(endpoint_name, exception):
+    if isinstance(exception, CustomException):
+        return JsonResponse({"error": "A custom exception occurred!"}, status=400)
+
+    # Fallback to the default exception handler
+    from small_view_set.helpers import default_exception_handler
+    return default_exception_handler(endpoint_name, exception)
+
+# Register the custom exception handler in settings.py
+from small_view_set.config import SmallViewSetConfig
+
+SMALL_VIEW_SET_CONFIG = SmallViewSetConfig(
+    exception_handler=app_exception_handler
+)
+```
+
+With this setup, any `CustomException` raised in your endpoints will be caught by `app_exception_handler`, and a custom JSON response will be returned.
