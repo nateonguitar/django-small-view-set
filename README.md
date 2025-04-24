@@ -8,22 +8,29 @@ This guide provides a simple example to get started with the library.
 
 ### Example Usage
 
-Here’s how you can define a basic API endpoint with one collection route and one detail route:
+Here’s how to define a basic view set:
+
+In settings.py
+```python
+# Register SmallViewSetConfig in settings
+from small_view_set SmallViewSetConfig
+
+SMALL_VIEW_SET_CONFIG = SmallViewSetConfig()
+```
+
 
 ```python
 import asyncio
 from django.http import JsonResponse
 from django.urls import path
-from small_view_set.small_view_set import SmallViewSet
-from small_view_set.decorators import endpoint, endpoint_disabled
-from small_view_set.config import SmallViewSetConfig
+from small_view_set import SmallViewSet, endpoint, endpoint_disabled
 
 class BarViewSet(SmallViewSet):
 
     def urlpatterns(self):
         return [
             path('api/bars/',          self.default_router, name='bars_collection'),
-            path('api/bars/items/',    self.items, name='bars_items'),
+            path('api/bars/items/',    self.items,          name='bars_items'),
             path('api/bars/<int:pk>/', self.default_router, name='bars_detail'),
         ]
 

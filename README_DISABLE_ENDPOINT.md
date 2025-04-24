@@ -11,19 +11,13 @@ Usage:
     - Example:
 
     ```python
-    from small_view_set.decorators import endpoint_disabled
-    from small_view_set.config import SmallViewSetConfig
+    from small_view_set import endpoint_disabled
 
-    # Register SmallViewSetConfig in settings
-    SMALL_VIEW_SET_CONFIG = SmallViewSetConfig()
-
-    class ExampleViewSet(SmallViewSet):
-
-        @endpoint(allowed_methods=['GET'])
-        @endpoint_disabled
-        def retrieve(self, request):
-            self.protect_retrieve(request)
-            return JsonResponse({"message": "This endpoint is disabled."})
+    @endpoint(allowed_methods=['GET'])
+    @endpoint_disabled
+    def retrieve(self, request):
+        self.protect_retrieve(request)
+        return JsonResponse({"message": "This endpoint is disabled."})
     ```
 
 # IMPORTANT

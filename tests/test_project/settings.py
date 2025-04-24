@@ -1,4 +1,4 @@
-from small_view_set.config import SmallViewSetConfig
+from small_view_set import SmallViewSetConfig
 
 
 SECRET_KEY = "test-secret-key"

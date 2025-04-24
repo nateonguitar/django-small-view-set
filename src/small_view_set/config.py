@@ -1,6 +1,6 @@
 from typing import Callable
 from urllib.request import Request
-from small_view_set.helpers import default_exception_handler, default_options_and_head_handler
+from .helpers import default_exception_handler, default_options_and_head_handler
 
 
 class SmallViewSetConfig:

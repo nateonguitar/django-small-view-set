@@ -8,7 +8,7 @@ Here’s how you can define a viewset with one default router endpoint and two c
 
 ```python
 # Register SmallViewSetConfig in settings
-from small_view_set.decorators SmallViewSetConfig
+from small_view_set SmallViewSetConfig
 
 SMALL_VIEW_SET_CONFIG = SmallViewSetConfig()
 ```
@@ -16,7 +16,7 @@ SMALL_VIEW_SET_CONFIG = SmallViewSetConfig()
 ```python
 from django.http import JsonResponse
 from django.urls import path
-from small_view_set.decorators import SmallViewSet, endpoint
+from small_view_set import SmallViewSet, endpoint
 
 class MyCustomViewSet(SmallViewSet):
 

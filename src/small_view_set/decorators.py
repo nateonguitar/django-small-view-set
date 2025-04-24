@@ -1,7 +1,7 @@
 import inspect
 from django.conf import settings
 
-from small_view_set.config import SmallViewSetConfig
+from .config import SmallViewSetConfig
 from .exceptions import EndpointDisabledException
 
 def endpoint(

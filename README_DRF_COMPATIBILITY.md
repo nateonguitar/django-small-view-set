@@ -10,11 +10,7 @@ You can use DRF serializers for validation and serialization while defining your
 from django.http import JsonResponse
 from django.urls import path
 from rest_framework import serializers
-from small_view_set.decorators import endpoint
-from small_view_set.config import SmallViewSetConfig
-
-# Register SmallViewSetConfig in settings
-SMALL_VIEW_SET_CONFIG = SmallViewSetConfig()
+from small_view_set import endpoint
 
 class FooCreateValidator(serializers.Serializer):
     name = serializers.CharField(max_length=100)
