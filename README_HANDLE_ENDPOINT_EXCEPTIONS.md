@@ -46,17 +46,24 @@ You can define a custom exception handler to catch specific exceptions and retur
 
 ```python
 from django.http import JsonResponse
+from urllib.request import Request
+from small_view_set.helpers import default_exception_handler
 
 class CustomException(Exception):
     pass
 
-def app_exception_handler(endpoint_name, exception):
+def app_exception_handler(request: Request, endpoint_name: str, exception):
     if isinstance(exception, CustomException):
-        return JsonResponse({"error": "A custom exception occurred!"}, status=400)
+        return JsonResponse(
+            data={
+                "error": "A custom exception occurred",
+            },
+            status=400)
 
-    # Fallback to the default exception handler
-    from small_view_set.helpers import default_exception_handler
-    return default_exception_handler(endpoint_name, exception)
+    # For convenience, you may want to fallback to the default exception handler
+    # which will detect most exceptions that look like response errors
+    # like PermissionDenied or Http404
+    return default_exception_handler(request, endpoint_name, exception)
 
 # Register the custom exception handler in settings.py
 from small_view_set.config import SmallViewSetConfig

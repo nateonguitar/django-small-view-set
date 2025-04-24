@@ -4,6 +4,7 @@ import logging
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, SuspiciousOperation, PermissionDenied
 from django.http import Http404, JsonResponse
+from urllib.request import Request
 
 from .exceptions import EndpointDisabledException, MethodNotAllowed, Unauthorized
 
@@ -40,7 +41,7 @@ def default_options_and_head_handler(request, allowed_methods: list[str]):
         raise MethodNotAllowed(method=request.method)
 
 
-def default_exception_handler(endpoint_name, exception):
+def default_exception_handler(request: Request, endpoint_name: str, exception):
     try:
         raise exception
 

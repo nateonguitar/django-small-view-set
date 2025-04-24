@@ -1,4 +1,3 @@
-from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.urls import path
 from urllib.request import Request

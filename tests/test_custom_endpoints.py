@@ -1,7 +1,7 @@
 from django.test import TestCase, Client, AsyncClient
 from django.urls import reverse
 
-class TestBarViewSet(TestCase):
+class TestCustomEndpointsViewSet(TestCase):
 
     def setUp(self):
         self.client = Client()

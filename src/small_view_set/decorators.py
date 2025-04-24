@@ -2,17 +2,16 @@ import inspect
 from django.conf import settings
 
 from small_view_set.config import SmallViewSetConfig
-
 from .exceptions import EndpointDisabledException
 
 def endpoint(
-        allowed_methods: list[str],
-        exception_handler=None):
+        allowed_methods: list[str]):
     def decorator(func):
-        config: SmallViewSetConfig = getattr(settings, 'SMALL_VIEW_SET_CONFIG', SmallViewSetConfig())
+        func_name = func.__name__
         def sync_wrapper(viewset, *args, **kwargs):
             request = args[0]
             try:
+                config: SmallViewSetConfig = getattr(settings, 'SMALL_VIEW_SET_CONFIG', SmallViewSetConfig())
                 pre_response = config.options_and_head_handler(request, allowed_methods)
                 if pre_response:
                     return pre_response
@@ -22,13 +21,12 @@ def endpoint(
                 else:
                     return func(viewset, request=request, pk=pk)
             except Exception as e:
-                if exception_handler:
-                    return exception_handler(func, e)
-                return config.exception_handler(func.__name__, e)
+                return config.exception_handler(request, func_name, e)
 
         async def async_wrapper(viewset, *args, **kwargs):
             request = args[0]
             try:
+                config: SmallViewSetConfig = getattr(settings, 'SMALL_VIEW_SET_CONFIG', SmallViewSetConfig())
                 pre_response = config.options_and_head_handler(request, allowed_methods)
                 if pre_response:
                     return pre_response
@@ -38,9 +36,7 @@ def endpoint(
                 else:
                     return await func(viewset, request=request, pk=pk)
             except Exception as e:
-                if exception_handler:
-                    return exception_handler(func, e)
-                return config.exception_handler(func.__name__, e)
+                return config.exception_handler(request, func_name, e)
 
         if inspect.iscoroutinefunction(func):
             return async_wrapper
