@@ -4,13 +4,13 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "django-small-view-set"
-version = "0.1.4"
+version = "0.2.0"
 description = "A lightweight Django ViewSet alternative with minimal abstraction."
 readme = "README.md"
 authors = ["Nate Brooks"]
 license = "MIT"
 repository = "https://github.com/nateonguitar/django-small-view-set"
-keywords = ["django", "viewset"]
+keywords = ["django", "small", "viewset", "view set"]
 packages = [
     { include = "small_view_set", from = "src" }
 ]

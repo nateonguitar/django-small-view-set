@@ -2,9 +2,7 @@ from django.http import JsonResponse
 from django.urls import path
 from urllib.request import Request
 
-from small_view_set import SmallViewSet
-from small_view_set.decorators import endpoint
-from small_view_set.exceptions import Unauthorized
+from small_view_set import SmallViewSet, endpoint, Unauthorized
 
 
 class AppViewSet(SmallViewSet):
