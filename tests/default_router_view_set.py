@@ -22,7 +22,7 @@ class AppViewSet(SmallViewSet):
 class DefaultRouterViewSet(AppViewSet):
     def urlpatterns(self):
         return [
-            path('api/default_router/',          self.default_router, name='default_router_collection'),
+            path('api/default_router/',          self.default_router_async, name='default_router_collection'),
             path('api/default_router/<int:pk>/', self.default_router, name='default_router_details'),
         ]
 
@@ -31,7 +31,7 @@ class DefaultRouterViewSet(AppViewSet):
         return JsonResponse({"value": 1}, status=200)
 
     @endpoint(allowed_methods=['POST'])
-    def create(self, request):
+    async def create(self, request):
         return JsonResponse({"value": 2}, status=201)
 
     @endpoint(allowed_methods=['GET'])
