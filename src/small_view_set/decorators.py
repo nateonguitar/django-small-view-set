@@ -10,6 +10,7 @@ def endpoint(
         func_name = func.__name__
         def sync_wrapper(viewset, *args, **kwargs):
             request = args[0]
+            args = args[1:]
             try:
                 config: SmallViewSetConfig = getattr(settings, 'SMALL_VIEW_SET_CONFIG', SmallViewSetConfig())
                 pre_response = config.options_and_head_handler(request, allowed_methods)
@@ -17,14 +18,15 @@ def endpoint(
                     return pre_response
                 pk = kwargs.pop('pk', None)
                 if pk is None:
-                    return func(viewset, request=request)
+                    return func(viewset, request=request, *args, **kwargs)
                 else:
-                    return func(viewset, request=request, pk=pk)
+                    return func(viewset, request=request, pk=pk, *args, **kwargs)
             except Exception as e:
                 return config.exception_handler(request, func_name, e)
 
         async def async_wrapper(viewset, *args, **kwargs):
             request = args[0]
+            args = args[1:]
             try:
                 config: SmallViewSetConfig = getattr(settings, 'SMALL_VIEW_SET_CONFIG', SmallViewSetConfig())
                 pre_response = config.options_and_head_handler(request, allowed_methods)
@@ -32,9 +34,9 @@ def endpoint(
                     return pre_response
                 pk = kwargs.pop('pk', None)
                 if pk is None:
-                    return await func(viewset, request=request)
+                    return await func(viewset, request=request, *args, **kwargs)
                 else:
-                    return await func(viewset, request=request, pk=pk)
+                    return await func(viewset, request=request, pk=pk, *args, **kwargs)
             except Exception as e:
                 return config.exception_handler(request, func_name, e)
 
