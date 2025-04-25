@@ -1,9 +1,10 @@
 import inspect
 import json
 import logging
-from django.http import JsonResponse
 from urllib.request import Request
 
+
+from .decorators import endpoint
 from .exceptions import BadRequest, MethodNotAllowed
 
 logger = logging.getLogger('app')
@@ -79,6 +80,7 @@ class SmallViewSet:
         """
         pass
 
+    @endpoint(allowed_methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'])
     async def default_router(self, request: Request, pk=None, *args, **kwargs):
         """
         This method routes requests to the appropriate method based on the HTTP method and presence of a primary key (pk).

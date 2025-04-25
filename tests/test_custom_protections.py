@@ -6,6 +6,20 @@ class TestCustomProtectionsViewSet(TestCase):
     def setUp(self):
         self.client = Client()
 
+    def test_options_and_head_collection(self):
+        endpoint = reverse('custom_protections_collection')
+        response = self.client.options(endpoint)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.head(endpoint)
+        self.assertEqual(response.status_code, 200)
+
+    def test_options_and_head_details(self):
+        endpoint = reverse('custom_protections_detail', args=[1])
+        response = self.client.options(endpoint)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.head(endpoint)
+        self.assertEqual(response.status_code, 200)
+
     def test_post_required_logged_in(self):
         endpoint = reverse('custom_protections_collection')
         response = self.client.post(

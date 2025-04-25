@@ -6,6 +6,20 @@ class TestCustomEndpointsViewSet(TestCase):
     def setUp(self):
         self.client = Client()
 
+    def test_options_and_head_collection(self):
+        endpoint = reverse('custom_collection')
+        response = self.client.options(endpoint)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.head(endpoint)
+        self.assertEqual(response.status_code, 200)
+
+    def test_options_and_head_details(self):
+        endpoint = reverse('custom_detail', args=[1])
+        response = self.client.options(endpoint)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.head(endpoint)
+        self.assertEqual(response.status_code, 200)
+
     def test_collection_wrong_method(self):
         endpoint = reverse('custom_collection')
         response = self.client.get(endpoint)
