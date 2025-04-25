@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "django-small-view-set"
-version = "0.2.2"
+version = "0.2.4"
 description = "A lightweight Django ViewSet alternative with minimal abstraction."
 readme = "README.md"
 authors = ["Nate Brooks"]
@@ -18,11 +18,10 @@ packages = [
 [tool.poetry.dependencies]
 python = ">=3.8"
 django = ">=3.2"
-pytest-django = "^4.11.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
-pytest-django = "*"
+pytest-django = "^4.11.1"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests.settings"
