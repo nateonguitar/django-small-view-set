@@ -61,7 +61,7 @@ def endpoint_disabled(func):
         ```python
         class ExampleViewSet(SmallViewSet):
 
-            @default_handle_endpoint_exceptions
+            @endpoint(allowed_method=['GET'])
             @endpoint_disabled
             def retrieve(self, request: Request) -> JsonResponse:
                 self.protect_retrieve(request)

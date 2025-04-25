@@ -83,7 +83,7 @@ class SmallViewSet:
         """
         This method routes requests to the appropriate method based on the HTTP method and presence of a primary key (pk).
         
-        It also handles errors and returns appropriate JSON responses by using the decorator @default_handle_endpoint_exceptions.
+        It also handles errors and returns appropriate JSON responses by using the decorator @endpoint(allowed_method=[]).
         
         GET/POST for collection endpoints and GET/PUT/PATCH/DELETE for detail endpoints.
 
@@ -99,23 +99,23 @@ class SmallViewSet:
                     path('api/comments/<int:pk>/custom_put/', self.custom_put,     name='comments_custom_put_detail'),
                 ]
 
-            @default_handle_endpoint_exceptions
+            @endpoint(allowed_method=['POST'])
             def create(self, request: Request):
                 self.protect_create(request)
                 . . .
 
-            @default_handle_endpoint_exceptions
+            @endpoint(allowed_method=['PUT', 'PATCH'])
             def update(self, request: Request, pk: int):
                 self.protect_update(request)
                 . . .
 
-            @default_handle_endpoint_exceptions
+            @endpoint(allowed_method=['PUT'])
             def custom_put(self, request: Request, pk: int):
                 self.protect_update(request)
                 . . .
 
             @disable_endpoint
-            @default_handle_endpoint_exceptions
+            @endpoint(allowed_method=['GET'])
             def some_disabled_endpoint(self, request: Request):
                 self.protect_retrieve(request)
                 . . .
