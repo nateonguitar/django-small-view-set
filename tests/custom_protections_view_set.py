@@ -3,6 +3,7 @@ from django.urls import path
 from urllib.request import Request
 
 from small_view_set import SmallViewSet, endpoint, Unauthorized
+from small_view_set.exceptions import MethodNotAllowed
 
 
 class AppViewSet(SmallViewSet):
@@ -80,16 +81,26 @@ class AppViewSet(SmallViewSet):
 class CustomProtectionsViewSet(AppViewSet):
     def urlpatterns(self):
         return [
-            path('api/custom_protections/',          self.default_router, name='custom_protections_collection'),
-            path('api/custom_protections/<int:pk>/', self.default_router, name='custom_protections_detail'),
+            path('api/custom_protections/',          self.collection, name='custom_protections_collection'),
+            path('api/custom_protections/<int:pk>/', self.detail,     name='custom_protections_detail'),
         ]
 
     @endpoint(allowed_methods=['POST'])
+    def collection(self, request: Request):
+        if request.method == 'POST':
+            return self.create(request)
+        raise MethodNotAllowed(method=request.method)
+
+    @endpoint(allowed_methods=['GET'])
+    def detail(self, request: Request, pk: int):
+        if request.method == 'GET':
+            return self.retrieve(request, pk)
+        raise MethodNotAllowed(method=request.method)
+
     def create(self, request: Request):
         self.protect_create(request)
         return JsonResponse({'name': 'Created'})
 
-    @endpoint(allowed_methods=['GET'])
     def retrieve(self, request: Request, pk: int):
         self.protect_retrieve(request)
         return JsonResponse({'id': pk, 'name': 'Retrieved'})

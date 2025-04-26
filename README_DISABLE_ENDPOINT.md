@@ -1,24 +1,70 @@
 # Disabling an endpoint with a decorator
 
-Temporarily disables an API endpoint based on the SMALL_VIEW_SET_CONFIG setting.
+It may be useful to disable an endpoint instead of commenting it out or deleting it.
 
-When `SMALL_VIEW_SET_CONFIG.respect_disabled_endpoints` in Django settings is either not set or set to `True`, this decorator
-will raise an `EndpointDisabledException`, resulting in a 404 response. When set to `False`,
-the endpoint will remain active, which is useful for testing environments.
+### When `SMALL_VIEW_SET_CONFIG.respect_disabled_endpoints` in Django settings is `True`
 
-Usage:
-Apply this decorator directly to a view method or action.
+This decorator will raise an `EndpointDisabledException`, resulting in a 405 response.
+
+### When `SMALL_VIEW_SET_CONFIG.respect_disabled_endpoints` in Django settings is `False`
+
+The endpoint will remain active. It is useful to re-enable endpoints
+when testing to maintain the functionality of the endpoint without leaving it active.
+
+## Usage:
+Apply this decorator directly to an orchestrator method or endpoint method.
 
 Example:
 
 ```python
 from small_view_set import endpoint_disabled
+from urllib.request import Request
 
-@endpoint(allowed_methods=['GET'])
-@endpoint_disabled
-def retrieve(self, request):
-    self.protect_retrieve(request)
-    return JsonResponse({"message": "This endpoint is disabled."})
+class MyViewSet(SmallViewSet):
+
+    def urlpatterns(self):
+        return [
+            path('api/my_endpoint/',         self.collection, name='my_endpoint_collection'),
+            path('api/my_endpoint/<int:pk>', self.detail,     name='my_endpoint_detail'),
+            path('api/my_endpoint/custom',   self.custom,     name='my_endpoint_custom'),
+        ]
+
+    @endpoint(allowed_methods=['POST', 'GET'])
+    def collection(self, request: Request):
+        if request.method == 'POST':
+            return self.create(request)
+        if request.method == 'GET':
+            return self.list(request)
+        raise MethodNotAllowed(request.method)
+
+    # Disable the entire collection
+    @endpoint(allowed_methods=['GET'])
+    @endpoint_disabled
+    def detail(self, request: Request, pk: int):
+        if request.method == 'GET':
+            return self.retrieve(request)
+        raise MethodNotAllowed(request.method)
+
+    def create(self, request: Request):
+        self.protect_create(request)
+        . . .
+
+    # Leave the rest of the collection orchestrator enabled and disable just this endpoint
+    @endpoint_disabled
+    def list(self, request: Request):
+        self.protect_list(request)
+        . . .
+
+    def retrieve(self, request: Request):
+        self.protect_retrieve(request)
+        . . .
+
+    # Disable a custom endpoint
+    @endpoint(allowed_methods=['POST'])
+    @endpoint_disabled
+    def custom(self, request: Request)
+        self.protect_create(request)
+        . . .
 ```
 
 # IMPORTANT
@@ -51,7 +97,7 @@ When running:
 test()
 ```
 
-is equivalent to:
+is roughly equivalent to:
 
 ```python
 func1(func2(test()))

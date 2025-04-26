@@ -1,37 +1,50 @@
 # Using Django Rest Framework (DRF) Tools with Small View Set
 
-This guide demonstrates how to integrate DRF tools like serializers and throttles with the Small View Set library.
+This guide demonstrates how to integrate DRF tools like serializers and throttles
 
 ## Example: Using DRF Serializers
 
-You can use DRF serializers for validation and serialization while defining your API logic explicitly in the viewset methods. Here’s an example:
+You can use DRF serializers for validation and serialization while defining your API logic explicitly in the viewset methods.
+
+Keep in mind, the point of this pattern is to remove black-box behaviors and maintain separation of concerns,
+so do not use serializer methods like `create` or `update`. There's really nothing stopping you, but 
+this guide values the separation.
 
 ```python
 from django.http import JsonResponse
 from django.urls import path
 from rest_framework import serializers
 from small_view_set import endpoint
+from urllib.request import Request
+
+from api.app_view_set import AppViewSet
 
 class FooCreateValidator(serializers.Serializer):
     name = serializers.CharField(max_length=100)
     age = serializers.IntegerField()
 
+
 class FooReadSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-
     class Meta:
         model = Foo
         fields = ('id', 'name', 'age', 'created_at', 'updated_at')
 
-class FooViewSet(SmallViewSet):
+
+class FooViewSet(AppViewSet):
 
     def urlpatterns(self):
         return [
-            path('api/foo/', self.default_router, name='foo_collection'),
+            path('api/foo/', self.collection, name='foo_collection'),
         ]
 
     @endpoint(allowed_methods=['POST'])
-    def create(self, request):
+    def collection(self, request: Request):
+        if request.method == 'POST':
+            return self.create(request)
+        raise MethodNotAllowed(request.method)
+
+    def create(self, request: Request):
         self.protect_create(request)
         request_user: User = request.user
         data = self.parse_json_body(request)
@@ -40,9 +53,8 @@ class FooViewSet(SmallViewSet):
         validator = FooCreateValidator(data=data)
         validator.is_valid(raise_exception=True)
 
-        validated_data = validator.validated_data.copy()
         foo = Foo.objects.create(
-            **validated_data,
+            **validator.validated_data,
             user=request_user)
 
         # Use a DRF model serializer for response data
@@ -57,9 +69,11 @@ You can also use DRF throttling classes to limit the rate of requests to your en
 ```python
 from rest_framework.throttling import UserRateThrottle
 from rest_framework.exceptions import Throttled
-from small_view_set import SmallViewSet, Unauthorized
+from small_view_set import Unauthorized
 
-class ThrottledItemsViewSet(SmallViewSet):
+from api.app_view_set import AppViewSet
+
+class ThrottledItemsViewSet(AppViewSet):
     def protect_create(self, request, apply_throttles=True):
         super().protect_create(request)
 
@@ -68,23 +82,29 @@ class ThrottledItemsViewSet(SmallViewSet):
             throttle = UserRateThrottle()
             if not throttle.allow_request(request, None):
                 # The default exeption handler will duck-type DRF's exceptions,
-                # or you can catch Throttled in your own custom exception handler decorator
+                # or you can catch Throttled in your own custom exception handler
                 raise Throttled(detail=throttle.wait)
 
     def urlpatterns(self):
         return [
-            path('api/throttle_items/',    self.default_router, name='throttled_items_collection'),
+            path('api/throttle_items/', self.collection, name='throttled_items_collection'),
         ]
 
-    @endpoint(allowed_method=['GET'])
-    def list(self, request):
-        self.protect_list(request, apply_throttles=False)
-        return JsonResponse({"message": "Throttled endpoint accessed"}, status=200)
+    @endpoint(allowed_methods=['POST', 'GET'])
+    def collection(self, request: Request):
+        if request.method == 'POST':
+            return self.create(request)
+        if request.method == 'GET':
+            return self.list(request)
+        raise MethodNotAllowed(request.method)
 
-    @endpoint(allowed_method=['POST'])
     def create(self, request):
         self.protect_create(request)
         return JsonResponse({"message": "Throttled endpoint accessed"}, status=201)
+
+    def list(self, request):
+        self.protect_list(request, apply_throttles=False)
+        return JsonResponse({"message": "Throttled endpoint accessed"}, status=200)
 ```
 
 ## Why Use DRF Tools with Small View Set?

@@ -18,7 +18,7 @@ if not _logger.hasHandlers():
     _logger.setLevel(logging.INFO)
 
 
-def default_options_and_head_handler(request, allowed_methods: list[str]):
+def default_options_and_head_handler(request: Request, allowed_methods: list[str]):
     if request.method == 'OPTIONS':
             response = JsonResponse(
                 data=None,

@@ -2,20 +2,9 @@
 
 This guide explains how to subclass `SmallViewSet` to add custom protections.
 
-## Example: Logged-In Protection
-
-Here’s how to add a logged-in protection:
 
 ```python
-from small_view_set import (
-    SmallViewSet,
-    SmallViewSetConfig,
-    Unauthorized,
-    endpoint,
-)
-
-# Register SmallViewSetConfig in settings
-SMALL_VIEW_SET_CONFIG = SmallViewSetConfig()
+from small_view_set import SmallViewSet, Unauthorized, endpoint
 
 class AppViewSet(SmallViewSet):
     def require_logged_in(self, request):
@@ -34,19 +23,26 @@ class AppViewSet(SmallViewSet):
         if require_logged_in:
             self.require_logged_in(request)
 
+
 class MyProtectedViewSet(AppViewSet):
     def urlpatterns(self):
         return [
-            path('api/protected/', self.default_router, name='protected_collection'),
+            path('api/protected/', self.collection, name='protected_collection'),
         ]
 
-    @endpoint(allowed_methods=['POST'])
-    def create(self, request, *args, **kwargs):
-        self.protect_create(request)
-        return JsonResponse({"message": "Protected resource created!"}, status=201)
+    @endpoint(allowed_methods=['GET', 'POST'])
+    def collection(self, request):
+        if request.method == 'GET':
+            return self.list(request)
+        if request.method == 'POST':
+            return self.create(request)
+        raise MethodNotAllowed(request.method)
 
-    @endpoint(allowed_methods=['GET'])
     def list(self, request, *args, **kwargs):
         self.protect_list(request)
-        return JsonResponse({"message": "This is a protected endpoint!"}, status=200)
+        return JsonResponse({"message": "This endpoint is not protected by default"}, status=200)
+
+    def create(self, request, *args, **kwargs):
+        self.protect_create(request)
+        return JsonResponse({"message": "Protected resource created"}, status=201)
 ```

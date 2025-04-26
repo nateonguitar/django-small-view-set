@@ -4,11 +4,6 @@ This guide demonstrates how to test endpoints created with the Django Small View
 
 ## Example Test Cases
 
-Remember to register SmallViewSetConfig in settings:
-```python
-SMALL_VIEW_SET_CONFIG = SmallViewSetConfig(exception_handler=app_exception_handler)
-```
-
 Remember to include `content_type="application/json"` in requests for proper handling.
 
 ```python
@@ -16,10 +11,7 @@ import datetime
 from django.test import TestCase, Client, override_settings
 from django.utils import timezone
 from django.urls import reverse
-from api.models import (
-    ForumPost,
-    User,
-)
+from api.models import ForumPost, User
 
 
 class Test(TestCase):
@@ -66,35 +58,6 @@ class Test(TestCase):
         response = self.client.post(endpoint, data, content_type="application/json")
         self.assertEqual(response.status_code, 403)
 
-    def test_create_forum_post_fails_bad_tags(self):
-        self.client.force_login(self.user_normal)
-        data = {
-            'blog': True,
-            'title': 'Title',
-            'text': 'Text',
-        }
-        endpoint = reverse('forum_posts_collection')
-        response = self.client.post(
-            endpoint,
-            { **data, 'title': 'Title <script>this is a script</script>' },
-            content_type="application/json")
-        self.assertEqual(response.status_code, 400)
-        response = self.client.post(
-            endpoint,
-            { **data, 'title': 'Title <iframe>this is a script</iframe>' },
-            content_type="application/json")
-        self.assertEqual(response.status_code, 400)
-        response = self.client.post(
-            endpoint,
-            { **data, 'text': 'Text <script>this is a script</script>' },
-            content_type="application/json")
-        self.assertEqual(response.status_code, 400)
-        response = self.client.post(
-            endpoint,
-            { **data, 'text': 'Text <iframe>this is a script</iframe>' },
-            content_type="application/json")
-        self.assertEqual(response.status_code, 400)
-
     def test_create_forum_post_success(self):
         self.client.force_login(self.user_normal)
         data = {
@@ -105,81 +68,6 @@ class Test(TestCase):
         endpoint = reverse('forum_posts_collection')
         response = self.client.post(endpoint, data, content_type='application/json')
         self.assertEqual(response.status_code, 201)
-
-    def test_update_forum_post_fails_not_logged_in(self):
-        forum_post = ForumPost.objects.create(
-            user=self.user_normal,
-            title='Forum post',
-            text='Post body')
-        data = {
-            'blog': True,
-            'title': 'Title',
-            'text': 'Text',
-        }
-        endpoint = reverse('forum_posts_detail', args=[forum_post.id])
-        response = self.client.put(endpoint, data, content_type='application/json')
-        self.assertEqual(response.status_code, 401)
-
-    def test_update_forum_post_fails_suspected_bot(self):
-        self.client.force_login(self.user_suspected_bot)
-        forum_post = ForumPost.objects.create(
-            user=self.user_normal,
-            title='Forum post 1',
-            text='Post body')
-        data = {
-            'blog': True,
-            'title': 'Title',
-            'text': 'Text',
-        }
-        endpoint = reverse('forum_posts_detail', args=[forum_post.id])
-        response = self.client.put(endpoint, data, content_type='application/json')
-        self.assertEqual(response.status_code, 403)
-
-    def test_update_forum_post_fails_bad_tags(self):
-        self.client.force_login(self.user_normal)
-        data = {
-            'title': 'Title',
-            'text': 'Text',
-        }
-        forum_post = ForumPost.objects.create(
-            user=self.user_normal,
-            title='Forum post 1',
-            text='Post body')
-        endpoint = reverse('forum_posts_detail', args=[forum_post.pk])
-        response = self.client.put(
-            endpoint,
-            { **data, 'title': 'Title <script>this is a script</script>' },
-            content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-        response = self.client.put(
-            endpoint,
-            { **data, 'title': 'Title <iframe>this is a script</iframe>' },
-            content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-        response = self.client.put(
-            endpoint,
-            { **data, 'text': 'Text <script>this is a script</script>' },
-            content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-        response = self.client.put(
-            endpoint,
-            { **data, 'text': 'Text <iframe>this is a script</iframe>' },
-            content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-
-    def test_update_forum_post_success(self):
-        self.client.force_login(self.user_normal)
-        forum_post = ForumPost.objects.create(
-            user=self.user_normal,
-            title='Forum post 1',
-            text='Post body')
-        data = {
-            'title': 'Title',
-            'text': 'Text',
-        }
-        endpoint = reverse('forum_posts_detail', args=[forum_post.id])
-        response = self.client.put(endpoint, data, content_type='application/json')
-        self.assertEqual(response.status_code, 200)
 
     @override_settings(LIST_PAGE_SIZES={'FORUM_POSTS': 2})
     def test_get_page_of_posts(self):
