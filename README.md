@@ -1,6 +1,6 @@
 # Django Small View Set
 
-A lightweight and explicit Django ViewSet alternative with minimal abstraction and full async support.
+A lightweight and explicit Django ViewSet alternative with minimal abstraction and full `async` support.
 
 Designed for clear patterns, minimal magic, and complete control over your API endpoints.
 
@@ -14,7 +14,7 @@ from small_view_set SmallViewSetConfig
 SMALL_VIEW_SET_CONFIG = SmallViewSetConfig()
 ```
 
-^^^ This will get you up and running, but it is recommended to write your own [Custom exception handler](./README_CUSTOM_EXCEPTION_HANDLER.md)
+This will get you up and running, but it is recommended to write your own [Custom exception handler](./README_CUSTOM_EXCEPTION_HANDLER.md)
 
 Please note, endpoints cannot be registered in `urls.py` with the
 request method (like POST, or GET), therefore create a `collection` and/or `detail` orchestrator
