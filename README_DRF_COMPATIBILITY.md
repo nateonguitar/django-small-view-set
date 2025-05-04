@@ -107,6 +107,38 @@ class ThrottledItemsViewSet(AppViewSet):
         return JsonResponse({"message": "Throttled endpoint accessed"}, status=200)
 ```
 
+## DRF Exception Handling
+
+A lot of DRF exceptions will just work with the default exception handler, but validation errors thrown from serializer validation will just say "Bad Request" unless handled.
+
+```python
+# Some endpoint code:
+validator = FooCreateValidator(data=data)
+validator.is_valid(raise_exception=True)
+```
+
+Catching the exception thrown by `raise_exception=True` when the validation does not pass:
+```python
+from django.http import JsonResponse
+from urllib.request import Request
+from rest_framework import serializers as drf_serializers
+from small_view_set import default_exception_handler
+
+def app_exception_handler(request: Request, endpoint_name: str, exception):
+    try:
+        raise exception
+    except drf_serializers.ValidationError as e:
+        return JsonResponse(e.detail, status=400)
+    except Exception as e:
+        return default_exception_handler(request, endpoint_name, exception)
+```
+
+And don't forget to register SmallViewSetConfig in settings.py with your app's exception handler
+```python
+SMALL_VIEW_SET_CONFIG = SmallViewSetConfig(
+    exception_handler=app_exception_handler)
+```
+
 ## Why Use DRF Tools with Small View Set?
 
 - **Validation**: DRF serializers provide robust validation and transformation for your data.
