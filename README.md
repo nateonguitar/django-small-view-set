@@ -36,6 +36,7 @@ class BarViewSet(SmallViewSet):
             path('api/bars/<int:pk>/', self.detail,     name='bars_detail'),
             path('api/bars/items/',    self.items,      name='bars_items'),
         ]
+
     @endpoint(allowed_methods=['GET', 'POST'])
     def collection(self, request: Request):
         if request.method == 'GET':

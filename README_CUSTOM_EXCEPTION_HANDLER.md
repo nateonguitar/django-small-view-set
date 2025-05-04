@@ -72,7 +72,7 @@ feel free to copy the `default_options_and_head_handler` and customize it.
 
 It gets the `allowed_methods` from the `@endpoint(allowed_methods=['POST'])` decorator on endpoints.
 
-```
+```python
 def default_options_and_head_handler(request: Request, allowed_methods: list[str]):
     if request.method == 'OPTIONS':
             response = JsonResponse(
