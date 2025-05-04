@@ -77,7 +77,6 @@ class ThrottledItemsViewSet(AppViewSet):
     def protect_create(self, request, apply_throttles=True):
         super().protect_create(request)
 
-        # Apply DRF throttling
         if apply_throttles:
             throttle = UserRateThrottle()
             if not throttle.allow_request(request, None):
@@ -104,7 +103,7 @@ class ThrottledItemsViewSet(AppViewSet):
 
     def list(self, request):
         self.protect_list(request, apply_throttles=False)
-        return JsonResponse({"message": "Throttled endpoint accessed"}, status=200)
+        return JsonResponse({"message": "This endpoint is not rate throttled"}, status=200)
 ```
 
 ## DRF Exception Handling
