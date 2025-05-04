@@ -32,7 +32,6 @@ class FooReadSerializer(serializers.ModelSerializer):
 
 
 class FooViewSet(AppViewSet):
-
     def urlpatterns(self):
         return [
             path('api/foo/', self.collection, name='foo_collection'),
@@ -46,16 +45,17 @@ class FooViewSet(AppViewSet):
 
     def create(self, request: Request):
         self.protect_create(request)
-        request_user: User = request.user
         data = self.parse_json_body(request)
 
         # Use the DRF serializer for validation
         validator = FooCreateValidator(data=data)
         validator.is_valid(raise_exception=True)
 
+        # If your validated_data has keys that match your model,
+        # you can flatten it into the create method with **
         foo = Foo.objects.create(
             **validator.validated_data,
-            user=request_user)
+            user=request.user)
 
         # Use a DRF model serializer for response data
         serializer = FooReadSerializer(foo)
@@ -121,8 +121,12 @@ Catching the exception thrown by `raise_exception=True` when the validation does
 ```python
 from django.http import JsonResponse
 from urllib.request import Request
-from rest_framework import serializers as drf_serializers
 from small_view_set import default_exception_handler
+
+# Note: django also has a ValidationError for form errors:
+#   from django.core.exceptions import ValidationError
+# Be careful to catch DRF's exception specifically
+from rest_framework import serializers as drf_serializers
 
 def app_exception_handler(request: Request, endpoint_name: str, exception):
     try:
