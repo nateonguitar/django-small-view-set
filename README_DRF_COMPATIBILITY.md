@@ -66,23 +66,75 @@ class FooViewSet(AppViewSet):
 
 You can also use DRF throttling classes to limit the rate of requests to your endpoints. Here’s an example:
 
+Define some throttles, like this `throttles.py`
 ```python
-from rest_framework.throttling import UserRateThrottle
+from django.core.cache import cache
+from django.conf import settings
+from rest_framework.exceptions import Throttled
+from rest_framework.request import Request
+from rest_framework.throttling import SimpleRateThrottle
+
+
+def get_client_ip(request: Request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
+class _EndpointThrottle(SimpleRateThrottle):
+    throttle_cache_key_prefix = 'throttle|generic_'
+
+    def get_cache_key(self, request, view):
+        identifier: str
+        if request.user and request.user.is_authenticated:
+            identifier = f'user_{request.user.id}'
+        else:
+            ip = get_client_ip(request)
+            identifier = f'ip_{ip}'
+        return self.throttle_cache_key_prefix + identifier
+
+    def allow_request(self, request, view):
+        allowed = super().allow_request(request, view)
+        if not allowed:
+            wait = self.wait()
+            raise Throttled(wait=wait)
+        return allowed
+
+class EndpointReadThrottle(_EndpointThrottle):
+    rate = '20/minute'
+    throttle_cache_key_prefix = 'throttle|read_'
+
+
+class EndpointWriteThrottle(_EndpointThrottle):
+    rate = '1/minute'
+    throttle_cache_key_prefix = 'throttle|write_'
+
+```
+
+```python
+from api.throttling import EndpointReadThrottle, EndpointWriteThrottle
 from rest_framework.exceptions import Throttled
 from small_view_set import Unauthorized
 
 from api.app_view_set import AppViewSet
 
 class ThrottledItemsViewSet(AppViewSet):
-    def protect_create(self, request, apply_throttles=True):
-        super().protect_create(request)
+    read_throttle = EndpointReadThrottle()
+    write_throttle = EndpointWriteThrottle()
 
-        if apply_throttles:
-            throttle = UserRateThrottle()
-            if not throttle.allow_request(request, None):
-                # The default exeption handler will duck-type DRF's exceptions,
-                # or you can catch Throttled in your own custom exception handler
-                raise Throttled(detail=throttle.wait)
+    def protect_create(self, request, apply_throttle=True):
+        super().protect_create(request)
+        if apply_throttle:
+            # In this configuration, checking allow_reqeuest will throw a Throttled exception if not allowed
+            write_throttle.allow_request(request, None)
+
+    def protect_list(self, request, apply_throttle=True):
+        super().protect_list(request)
+        if apply_throttle:
+            read_throttle.allow_request(request, None)
 
     def urlpatterns(self):
         return [
@@ -102,7 +154,7 @@ class ThrottledItemsViewSet(AppViewSet):
         return JsonResponse({"message": "Throttled endpoint accessed"}, status=201)
 
     def list(self, request):
-        self.protect_list(request, apply_throttles=False)
+        self.protect_list(request, apply_throttle=False)
         return JsonResponse({"message": "This endpoint is not rate throttled"}, status=200)
 ```
 
@@ -120,18 +172,22 @@ Catching the exception thrown by `raise_exception=True` when the validation does
 ```python
 from django.http import JsonResponse
 from urllib.request import Request
-from small_view_set import default_exception_handler
-
-# Note: django also has a ValidationError for form errors:
-#   from django.core.exceptions import ValidationError
-# Be careful to catch DRF's exception specifically
 from rest_framework import serializers as drf_serializers
+from rest_framework import exceptions as drf_exceptions
+from small_view_set import default_exception_handler
 
 def app_exception_handler(request: Request, endpoint_name: str, exception):
     try:
         raise exception
+
     except drf_serializers.ValidationError as e:
+        logger.error(f"Validation error in {endpoint_name}: {e}")
         return JsonResponse(e.detail, status=400)
+
+    except drf_exceptions.Throttled as e:
+        msg = f"You must wait {e.wait} seconds before trying again." if e.wait else "Too many requests"
+        return JsonResponse(msg, safe=False, status=e.status_code)
+
     except Exception as e:
         return default_exception_handler(request, endpoint_name, exception)
 ```
